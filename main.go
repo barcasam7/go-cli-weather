@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -40,6 +41,19 @@ type weatherResponse struct {
 	} `json:"forecast"`
 }
 
+var emojis = map[string]string{
+	"sunny":         "☀️",
+	"cloudy":        "☁️",
+	"rain":          "🌧️",
+	"thunder":       "⛈️",
+	"snow":          "❄️",
+	"fog":           "🌫️",
+	"windy":         "💨",
+	"partly cloudy": "🌤️",
+	"overcast":      "☁️",
+	"clear":         "🌙",
+}
+
 func main() {
 	err := godotenv.Load() // load env file
 	if err != nil {
@@ -66,7 +80,7 @@ func main() {
 	if res.StatusCode != http.StatusOK {
 		panic("Failed to fetch weather data")
 	}
-
+	// Read the response body
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
@@ -97,11 +111,12 @@ func main() {
 			}
 
 			message := fmt.Sprintf(
-				"%s - %.0fC, %.0f%%, %s\n",
+				"%s - %.0fC, %.0f%%, %s %s\n",
 				date.Format("15:04"),
 				hour.TempC,
 				hour.ChanceOfRain,
 				hour.Condition.Text,
+				emojis[strings.ToLower(hour.Condition.Text)],
 			)
 
 			if hour.ChanceOfRain < 40 {
