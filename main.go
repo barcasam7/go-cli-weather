@@ -70,27 +70,7 @@ func main() {
 	var days int = 1
 	_, _ = fmt.Scanln(&days)
 
-	API_KEY := os.Getenv("API_KEY")
-	res, err := http.Get("http://api.weatherapi.com/v1/forecast.json?key=" + API_KEY + "&q=" + q + "&days=" + strconv.Itoa(days) + "&aqi=no&alerts=no")
-	if err != nil {
-		panic(err)
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		panic("Failed to fetch weather data")
-	}
-	// Read the response body
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	var weather weatherResponse
-	if err := json.Unmarshal(body, &weather); err != nil {
-		panic(err)
-	}
-
+	var weather = getWeatherResponse(q, days)
 	location, current := weather.Location, weather.Current
 
 	fmt.Printf(
@@ -126,4 +106,28 @@ func main() {
 			}
 		}
 	}
+}
+
+func getWeatherResponse(q string, days int) *weatherResponse {
+	API_KEY := os.Getenv("API_KEY")
+	res, err := http.Get("http://api.weatherapi.com/v1/forecast.json?key=" + API_KEY + "&q=" + q + "&days=" + strconv.Itoa(days) + "&aqi=no&alerts=no")
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		panic("Failed to fetch weather data")
+	}
+	// Read the response body
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var weatherResponse weatherResponse
+	if err := json.Unmarshal(body, &weatherResponse); err != nil {
+		panic(err)
+	}
+	return &weatherResponse
 }
